@@ -1,0 +1,32 @@
+# FastAPI 核心框架
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+
+# 数据验证
+pydantic>=2.5.3
+pydantic-settings>=2.1.0
+
+# CORS 支持
+python-multipart==0.0.6
+
+# 环境变量管理
+python-dotenv==1.0.0
+
+# HTTP 客户端（用于调用 LLM API）
+httpx==0.26.0
+
+# PPT/PDF 处理
+pdf2image==1.17.0
+python-pptx==0.6.23
+Pillow>=10.0.0  # 使用兼容版本
+PyPDF2==3.0.1
+
+# OpenAI API（付费方案）
+openai>=1.13.3
+
+# ============ 开源方案依赖 ============
+# TTS - 微软免费语音合成
+edge-tts>=6.1.9
+
+# ASR - 本地语音识别（Whisper）
+faster-whisper>=1.0.0

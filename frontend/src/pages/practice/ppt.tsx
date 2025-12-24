@@ -69,15 +69,15 @@ export default function PPTPracticePage() {
       </Head>
 
       {/* 练习页面 - 全屏沉浸式布局 */}
-      <div className="h-screen flex flex-col bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950">
+      <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-purple-50">
         {/* 顶部导航条（最小化设计） */}
         {!isPresenting && (
-          <header className="flex-shrink-0 bg-black/20 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-3">
+          <header className="flex-shrink-0 bg-white/80 backdrop-blur-xl border-b border-gray-200 px-4 sm:px-6 py-3">
             <div className="max-w-7xl mx-auto flex items-center justify-between">
               {/* 返回按钮 */}
               <Link
                 href="/product"
-                className="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors font-medium text-sm group"
+                className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors font-medium text-sm group"
               >
                 <svg
                   className="w-4 h-4 group-hover:-translate-x-1 transition-transform"
@@ -105,7 +105,7 @@ export default function PPTPracticePage() {
                     </svg>
                   </div>
                 </div>
-                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   PPT 演讲练习
                 </h1>
               </div>
@@ -124,14 +124,14 @@ export default function PPTPracticePage() {
           ) : slides ? (
             // 已上传 PPT：显示预览和开始按钮
             <div className="min-h-full flex flex-col items-center py-8 px-8">
-              <div className="max-w-4xl w-full bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl p-8 border border-white/10">
+              <div className="max-w-4xl w-full bg-white rounded-3xl shadow-2xl p-8 border border-gray-200">
                 <div className="text-center mb-6">
                   <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full mb-4 shadow-lg">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     PPT 已准备好
                   </h2>
                 </div>
@@ -145,7 +145,7 @@ export default function PPTPracticePage() {
                       className="w-full h-full object-contain"
                     />
                   </div>
-                  <p className="text-center text-gray-300 flex items-center justify-center gap-2">
+                  <p className="text-center text-gray-600 flex items-center justify-center gap-2">
                     <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
@@ -171,25 +171,25 @@ export default function PPTPracticePage() {
 
                   <button
                     onClick={resetUpload}
-                    className="px-6 py-4 bg-gray-700 hover:bg-gray-600 text-white font-semibold rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5"
+                    className="px-6 py-4 bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-300 hover:border-gray-400 font-semibold rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5"
                   >
                     重新上传
                   </button>
                 </div>
 
                 {/* 使用提示 */}
-                <div className="mt-8 p-6 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-xl border border-blue-500/30 backdrop-blur-sm">
+                <div className="mt-8 p-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl border border-blue-200">
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                       </svg>
                     </div>
-                    <h3 className="text-sm font-semibold text-white">
+                    <h3 className="text-sm font-semibold text-gray-900">
                       演讲技巧
                     </h3>
                   </div>
-                  <ul className="text-sm text-gray-300 space-y-2">
+                  <ul className="text-sm text-gray-700 space-y-2">
                     <li className="flex items-start gap-2">
                       <svg className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />

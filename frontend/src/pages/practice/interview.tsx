@@ -105,13 +105,13 @@ export default function InterviewPage() {
         <meta name="description" content="选择岗位，开始 AI 模拟面试" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         {/* 顶部导航 */}
-        <header className="bg-black/20 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-4">
+        <header className="bg-white/80 backdrop-blur-xl border-b border-gray-200 px-4 sm:px-6 py-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between">
             <Link
               href="/product"
-              className="inline-flex items-center gap-2 text-gray-300 hover:text-white transition-colors font-medium group"
+              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors font-medium group"
             >
               <svg
                 className="w-5 h-5 group-hover:-translate-x-1 transition-transform"
@@ -136,7 +136,7 @@ export default function InterviewPage() {
                   <span className="text-xl">💼</span>
                 </div>
               </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 AI 面试模拟
               </h1>
             </div>
@@ -149,10 +149,10 @@ export default function InterviewPage() {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
           {/* 页面标题 */}
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
               选择你要面试的岗位
             </h2>
-            <p className="text-lg text-gray-300 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               选择一个岗位，AI 面试官会通过语音通话的形式与你进行模拟面试
             </p>
           </div>
@@ -167,8 +167,8 @@ export default function InterviewPage() {
                   relative p-6 rounded-2xl transition-all duration-300 text-left
                   ${
                     selectedPosition === job.id
-                      ? 'bg-gradient-to-br from-blue-600/20 to-purple-600/20 border-2 border-blue-500 shadow-xl shadow-blue-500/20'
-                      : 'bg-gradient-to-br from-gray-900 to-gray-800 border border-white/10 hover:border-white/30'
+                      ? 'bg-gradient-to-br from-blue-50 to-purple-50 border-2 border-blue-500 shadow-xl shadow-blue-500/20'
+                      : 'bg-white border border-gray-200 hover:border-gray-300 hover:shadow-lg'
                   }
                   transform hover:-translate-y-1
                 `}
@@ -198,8 +198,8 @@ export default function InterviewPage() {
                 </div>
 
                 {/* 标题 */}
-                <h3 className="text-xl font-bold text-white mb-2">{job.title}</h3>
-                <p className="text-sm text-gray-400 mb-4">{job.description}</p>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{job.title}</h3>
+                <p className="text-sm text-gray-600 mb-4">{job.description}</p>
 
                 {/* 常见问题预览 */}
                 <div className="space-y-2">
@@ -217,7 +217,7 @@ export default function InterviewPage() {
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span className="text-xs text-gray-400">{question}</span>
+                      <span className="text-xs text-gray-600">{question}</span>
                     </div>
                   ))}
                 </div>
@@ -227,21 +227,21 @@ export default function InterviewPage() {
 
           {/* 选中岗位信息和开始按钮 */}
           {selectedJob && (
-            <div className="max-w-3xl mx-auto bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-2xl p-8 border border-white/10 animate-in fade-in zoom-in-95 duration-300">
+            <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-2xl p-8 border border-gray-200 animate-in fade-in zoom-in-95 duration-300">
               <div className="flex items-start gap-6 mb-6">
                 <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-4xl shadow-xl">
                   {selectedJob.icon}
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-2xl font-bold text-white mb-2">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
                     {selectedJob.title}
                   </h3>
-                  <p className="text-gray-400">{selectedJob.description}</p>
+                  <p className="text-gray-600">{selectedJob.description}</p>
                 </div>
               </div>
 
               {/* 面试说明 */}
-              <div className="mb-6 p-6 bg-gradient-to-br from-blue-900/30 to-purple-900/30 rounded-xl border border-blue-500/30 backdrop-blur-sm">
+              <div className="mb-6 p-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl border border-blue-200">
                 <div className="flex items-center gap-2 mb-3">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
                     <svg
@@ -256,9 +256,9 @@ export default function InterviewPage() {
                       />
                     </svg>
                   </div>
-                  <h4 className="text-sm font-semibold text-white">面试须知</h4>
+                  <h4 className="text-sm font-semibold text-gray-900">面试须知</h4>
                 </div>
-                <ul className="text-sm text-gray-300 space-y-2">
+                <ul className="text-sm text-gray-700 space-y-2">
                   <li className="flex items-start gap-2">
                     <svg
                       className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0"
@@ -359,7 +359,7 @@ export default function InterviewPage() {
                   />
                 </svg>
               </div>
-              <p className="text-gray-400">请先选择一个岗位</p>
+              <p className="text-gray-600">请先选择一个岗位</p>
             </div>
           )}
         </main>

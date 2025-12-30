@@ -5,7 +5,8 @@
 
 import Head from 'next/head';
 import Link from 'next/link';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import PPTUploader from '@/components/PPTUploader';
 import PPTPresenter from '@/components/PPTPresenter';
 import PPTDemoSection from '@/components/PPTDemoSection';
@@ -23,9 +24,21 @@ const getFullImageUrl = (imageUrl: string): string => {
 };
 
 export default function PPTPracticePage() {
+  const router = useRouter();
   const [slides, setSlides] = useState<SlideContent[] | null>(null);
   const [presentationId, setPresentationId] = useState<string | null>(null);
   const [isPresenting, setIsPresenting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 检查登录状态
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/login');
+    } else {
+      setIsLoading(false);
+    }
+  }, [router]);
 
   /**
    * 处理 PPT 上传成功
@@ -34,6 +47,17 @@ export default function PPTPracticePage() {
     setSlides(uploadedSlides);
     setPresentationId(pptId);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">加载中...</p>
+        </div>
+      </div>
+    );
+  }
 
   /**
    * 开始演讲

@@ -2,15 +2,19 @@
 PPT 演讲练习相关 API
 """
 
-from fastapi import APIRouter, UploadFile, File, HTTPException, Form
+from fastapi import APIRouter, UploadFile, File, HTTPException, Form, Header
 from fastapi.staticfiles import StaticFiles
 from app.models.ppt import PPTUploadResponse, SlideContent, SlideAnalysisRequest, SlideAnalysisResponse, VideoAnalysisResponse
+from app.models.user_profile import PracticeRecord, PracticeType
 from app.core.llm_client import llm_client, analyze_slide_with_vision, synthesize_speech, generate_slide_demo_script, transcribe_audio
 from app.models.chat import Message
 from app.core.config import settings
+from app.core.auth_utils import get_current_user_id
 from app.services.ppt_processor import PPTProcessor, get_file_type
-from typing import List
+from app.services.user_profile_service import user_profile_service
+from typing import List, Optional
 from pathlib import Path
+from datetime import datetime
 import uuid
 import os
 import shutil
@@ -442,7 +446,8 @@ def extract_suggestions_from_feedback(feedback: str) -> List[str]:
 @router.post("/analyze-video", response_model=VideoAnalysisResponse)
 async def analyze_presentation_video(
     file: UploadFile = File(...),
-    presentation_id: str = Form(...)
+    presentation_id: str = Form(...),
+    authorization: Optional[str] = Header(None)
 ):
     """
     分析用户上传的 PPT 演讲视频
@@ -539,14 +544,25 @@ async def analyze_presentation_video(
                 ]
             )
 
-        # 4. 构建 PPT 内容摘要（用于 AI 分析）
+        # 4. 获取用户ID和个性化上下文
+        user_id = get_current_user_id(authorization)
+        personalized_context = ""
+        if user_id:
+            personalized_context = user_profile_service.get_personalized_context(user_id)
+            if personalized_context == "这是该用户的第一次练习。":
+                personalized_context = "\n\n这是该用户的第一次练习，请给予更多鼓励。\n"
+            else:
+                personalized_context = f"\n\n【用户历史档案】\n{personalized_context}\n请根据用户的历史表现给出针对性的反馈。\n"
+
+        # 5. 构建 PPT 内容摘要（用于 AI 分析）
         ppt_content_summary = "\n\n".join([
             f"第 {slide.slide_number} 页：{slide.text_content[:200]}"
             for slide in slides
         ])
 
-        # 5. 使用 AI 分析用户的演讲表现
+        # 6. 使用 AI 分析用户的演讲表现
         analysis_prompt = f"""你是一位专业但严格的演讲教练。用户刚刚完成了一场 PPT 演讲练习，请客观分析他的表现。
+{personalized_context}
 
 **PPT 内容摘要：**
 {ppt_content_summary}
@@ -632,14 +648,44 @@ async def analyze_presentation_video(
 
         logger.info(f"AI 示范生成完成: {len(demo_script)} 字符")
 
-        # 8. 清理临时文件
+        # 8. 如果用户已登录，保存练习记录
+        if user_id:
+            try:
+                # 创建练习记录
+                record = PracticeRecord(
+                    id=str(uuid.uuid4()),
+                    user_id=user_id,
+                    practice_type=PracticeType.PPT,
+                    timestamp=datetime.utcnow(),
+                    transcript=transcript,
+                    word_count=len(transcript),
+                    overall_score=analysis_data.get("score", 75),
+                    content_score=None,
+                    fluency_score=None,
+                    clarity_score=None,
+                    strengths=analysis_data.get("strengths", []),
+                    improvements=analysis_data.get("improvements", []),
+                    metadata={
+                        "presentation_id": presentation_id,
+                        "slide_count": len(slides)
+                    }
+                )
+
+                # 保存到用户档案
+                user_profile_service.add_practice_record(user_id, record)
+                logger.info(f"已保存用户PPT练习记录: user={user_id}")
+
+            except Exception as e:
+                logger.error(f"保存用户记录失败: {str(e)}", exc_info=True)
+
+        # 9. 清理临时文件
         try:
             os.remove(video_path)
             os.remove(audio_path)
         except:
             pass
 
-        # 9. 返回分析结果
+        # 10. 返回分析结果
         return VideoAnalysisResponse(
             presentation_id=presentation_id,
             transcript=transcript,

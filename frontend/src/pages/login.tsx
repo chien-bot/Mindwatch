@@ -17,7 +17,6 @@ export default function Login() {
 
   /**
    * 处理登录表单提交
-   * 当前为 Mock 登录，直接跳转到产品页
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,12 +35,35 @@ export default function Login() {
 
     setIsLoading(true);
 
-    // Mock 登录：延迟 1 秒后跳转
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || '登录失败');
+      }
+
+      // 保存 token 和用户信息
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
       // 跳转到产品页
       router.push('/product');
-    }, 1000);
+    } catch (err: any) {
+      setError(err.message || '登录失败，请检查邮箱和密码');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -215,12 +237,12 @@ export default function Login() {
             {/* 注册提示 */}
             <div className="mt-6 text-center text-sm text-gray-600">
               还没有账户？{' '}
-              <a
-                href="#"
+              <Link
+                href="/register"
                 className="text-blue-600 hover:text-purple-600 font-medium transition-colors"
               >
                 立即注册
-              </a>
+              </Link>
             </div>
           </div>
 

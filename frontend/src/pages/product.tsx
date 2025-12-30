@@ -6,6 +6,7 @@
 import Head from 'next/head';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 
 // 模块卡片数据
 interface ModuleCard {
@@ -54,12 +55,52 @@ const MODULES: ModuleCard[] = [
 
 export default function Product() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
+
+  // 检查用户登录状态
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('user');
+
+      if (!token || !userData) {
+        // 未登录，重定向到登录页
+        router.push('/login');
+        return;
+      }
+
+      try {
+        setUser(JSON.parse(userData));
+        setIsLoading(false);
+      } catch (error) {
+        // token 或用户数据无效
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        router.push('/login');
+      }
+    };
+
+    checkAuth();
+  }, [router]);
 
   const handleCardClick = (module: ModuleCard) => {
     if (module.available) {
       router.push(module.href);
     }
   };
+
+  // 加载中显示
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-blue-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">加载中...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

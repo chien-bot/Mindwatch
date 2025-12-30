@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = True
 
+    # 安全配置
+    SECRET_KEY: str = "your-secret-key-change-in-production-please-use-a-random-string"
+
     # CORS 配置
     CORS_ORIGINS: str = "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001"
 

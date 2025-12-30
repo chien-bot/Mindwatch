@@ -3,13 +3,18 @@ AI 面试对话 API
 支持多轮语音对话和最终评价
 """
 
-from fastapi import APIRouter, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, Header
 from pydantic import BaseModel
 from typing import List, Optional
 from app.models.chat import Message
+from app.models.user_profile import PracticeRecord, PracticeType
 from app.prompts import get_system_prompt
 from app.core.llm_client import llm_client, transcribe_audio, synthesize_speech
+from app.core.auth_utils import get_current_user_id
+from app.services.user_profile_service import user_profile_service
 import logging
+import uuid
+from datetime import datetime
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -47,18 +52,29 @@ interview_sessions = {}
 
 
 @router.post("/interview/start", response_model=InterviewStartResponse)
-async def start_interview(request: InterviewStartRequest):
+async def start_interview(
+    request: InterviewStartRequest,
+    authorization: Optional[str] = Header(None)
+):
     """
     开始面试
 
     返回第一个问题和会话ID
     """
     try:
-        import uuid
         session_id = str(uuid.uuid4())
+
+        # 获取当前用户ID（可选）
+        user_id = get_current_user_id(authorization)
 
         # 获取面试 system prompt
         system_prompt = get_system_prompt("interview")
+
+        # 如果用户已登录，获取个性化上下文
+        if user_id:
+            personalized_context = user_profile_service.get_personalized_context(user_id)
+            if personalized_context != "这是该用户的第一次练习。":
+                system_prompt += f"\n\n{personalized_context}\n请根据用户的历史表现给出针对性的面试指导。"
 
         # 生成第一个问题（必须是自我介绍）
         messages = [
@@ -72,10 +88,12 @@ async def start_interview(request: InterviewStartRequest):
         interview_sessions[session_id] = {
             "position": request.position,
             "messages": messages + [Message(role="assistant", content=first_question)],
-            "question_count": 1
+            "question_count": 1,
+            "user_id": user_id,  # 保存用户ID
+            "all_answers": []  # 保存所有回答用于最后分析
         }
 
-        logger.info(f"面试开始: session={session_id}, position={request.position}")
+        logger.info(f"面试开始: session={session_id}, position={request.position}, user={user_id or 'anonymous'}")
 
         return InterviewStartResponse(
             session_id=session_id,
@@ -114,6 +132,9 @@ async def submit_answer(request: InterviewAnswerRequest):
         # 添加用户消息到历史
         session["messages"].append(Message(role="user", content=user_answer))
 
+        # 保存回答用于最后分析
+        session["all_answers"].append(user_answer)
+
         # 判断是否继续提问还是结束
         # question_count 表示当前已问的问题数（包括刚回答的这个）
         question_count = session["question_count"]
@@ -148,6 +169,42 @@ async def submit_answer(request: InterviewAnswerRequest):
 - 用口语表达，这会被语音播放！"""
             session["messages"][0] = Message(role="system", content=final_system_prompt)
             final_feedback = await llm_client.call_llm(session["messages"])
+
+            # 如果用户已登录，保存面试记录
+            user_id = session.get("user_id")
+            if user_id:
+                try:
+                    # 计算总字数
+                    all_text = " ".join(session["all_answers"])
+                    word_count = len(all_text)
+
+                    # 简单评分（基于反馈内容，这里给一个估算分数）
+                    # 实际可以让AI返回结构化评分
+                    overall_score = 75  # 默认75分，后续可以改进为AI打分
+
+                    # 创建练习记录
+                    record = PracticeRecord(
+                        id=str(uuid.uuid4()),
+                        user_id=user_id,
+                        practice_type=PracticeType.INTERVIEW,
+                        timestamp=datetime.utcnow(),
+                        transcript=all_text,
+                        word_count=word_count,
+                        overall_score=overall_score,
+                        strengths=[],  # 可以从final_feedback中提取
+                        improvements=[],  # 可以从final_feedback中提取
+                        metadata={
+                            "position": session["position"],
+                            "question_count": question_count
+                        }
+                    )
+
+                    # 保存到用户档案
+                    user_profile_service.add_practice_record(user_id, record)
+                    logger.info(f"已保存用户面试记录: user={user_id}")
+
+                except Exception as e:
+                    logger.error(f"保存用户记录失败: {str(e)}", exc_info=True)
 
             logger.info(f"面试结束: session={request.session_id}")
 

@@ -5,6 +5,8 @@
 
 import Head from 'next/head';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import Footer from '@/components/layout/Footer';
 
 // 功能亮点数据
@@ -81,6 +83,23 @@ export default function Home() {
  * 首屏展示，包含主标题、副标题和 CTA 按钮
  */
 function HeroSection() {
+  const router = useRouter();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    // 检查是否已登录
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  const handleStartClick = () => {
+    if (isLoggedIn) {
+      router.push('/product');
+    } else {
+      router.push('/login');
+    }
+  };
+
   return (
     <section className="min-h-[calc(100vh-64px)] flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 px-4">
       <div className="max-w-4xl mx-auto text-center">
@@ -101,12 +120,12 @@ function HeroSection() {
 
         {/* CTA 按钮 */}
         <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-          <Link
-            href="/product"
+          <button
+            onClick={handleStartClick}
             className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 text-center"
           >
-            开始练习
-          </Link>
+            {isLoggedIn ? '开始练习' : '立即开始'}
+          </button>
           <a
             href="#features"
             className="px-8 py-4 bg-white text-gray-700 font-semibold rounded-xl shadow-md border border-gray-200 hover:border-gray-300 hover:shadow-lg transition-all duration-200 text-center"

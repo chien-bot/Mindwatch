@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.core.config import settings
-from app.api.v1 import chat, self_intro_audio, ppt, tts, interview
+from app.api.v1 import chat, self_intro_audio, ppt, tts, interview, auth, user_profile
 from pathlib import Path
 
 # 创建 FastAPI 应用实例
@@ -33,6 +33,8 @@ static_dir.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
 
 # 注册 API 路由
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["auth"])
+app.include_router(user_profile.router, prefix="/api/v1/user", tags=["user_profile"])
 app.include_router(chat.router, prefix="/api", tags=["chat"])
 app.include_router(
     self_intro_audio.router, prefix="/api/v1", tags=["self_intro", "audio"]

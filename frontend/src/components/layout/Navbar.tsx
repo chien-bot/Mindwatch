@@ -4,7 +4,7 @@
  * 响应式设计，移动端使用汉堡菜单
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 
@@ -12,17 +12,49 @@ import { useRouter } from 'next/router';
 interface NavItem {
   label: string;
   href: string;
+  requireAuth?: boolean; // 是否需要登录
+  requireGuest?: boolean; // 是否仅游客可见
 }
 
 const NAV_ITEMS: NavItem[] = [
   { label: 'Home', href: '/' },
-  { label: 'Product', href: '/product' },
-  { label: 'Login', href: '/login' },
+  { label: 'Product', href: '/product', requireAuth: true },
+  { label: 'Login', href: '/login', requireGuest: true },
 ];
 
 export default function Navbar() {
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  // 检查登录状态
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('token');
+      const userData = localStorage.getItem('user');
+
+      if (token && userData) {
+        try {
+          setUser(JSON.parse(userData));
+          setIsLoggedIn(true);
+        } catch (error) {
+          setIsLoggedIn(false);
+        }
+      } else {
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkAuth();
+
+    // 监听路由变化，重新检查登录状态
+    router.events?.on('routeChangeComplete', checkAuth);
+
+    return () => {
+      router.events?.off('routeChangeComplete', checkAuth);
+    };
+  }, [router]);
 
   // 判断当前路由是否激活
   const isActive = (href: string) => {
@@ -42,6 +74,23 @@ export default function Navbar() {
     setIsMenuOpen(false);
   };
 
+  // 退出登录
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setIsLoggedIn(false);
+    setUser(null);
+    closeMenu();
+    router.push('/');
+  };
+
+  // 过滤导航项
+  const visibleNavItems = NAV_ITEMS.filter((item) => {
+    if (item.requireAuth && !isLoggedIn) return false;
+    if (item.requireGuest && isLoggedIn) return false;
+    return true;
+  });
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -56,7 +105,7 @@ export default function Navbar() {
 
           {/* 桌面端导航链接 */}
           <div className="hidden md:flex items-center space-x-1">
-            {NAV_ITEMS.map((item) => (
+            {visibleNavItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -72,6 +121,24 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
+
+            {/* 登录后显示用户信息和退出按钮 */}
+            {isLoggedIn && (
+              <>
+                <div className="flex items-center gap-2 px-3 py-1 ml-2">
+                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                    {user?.username?.[0]?.toUpperCase() || 'U'}
+                  </div>
+                  <span className="text-sm text-gray-700">{user?.username}</span>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-all duration-200"
+                >
+                  退出登录
+                </button>
+              </>
+            )}
           </div>
 
           {/* 移动端汉堡菜单按钮 */}
@@ -119,7 +186,7 @@ export default function Navbar() {
       {isMenuOpen && (
         <div className="md:hidden bg-white border-t border-gray-200 shadow-lg">
           <div className="px-4 py-3 space-y-1">
-            {NAV_ITEMS.map((item) => (
+            {visibleNavItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -136,6 +203,27 @@ export default function Navbar() {
                 {item.label}
               </Link>
             ))}
+
+            {/* 移动端登录后显示用户信息和退出按钮 */}
+            {isLoggedIn && (
+              <div className="pt-3 mt-3 border-t border-gray-200">
+                <div className="flex items-center gap-3 px-4 py-2 mb-2">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    {user?.username?.[0]?.toUpperCase() || 'U'}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900">{user?.username}</p>
+                    <p className="text-xs text-gray-500">{user?.email}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="w-full px-4 py-3 rounded-lg text-base font-medium text-red-600 hover:bg-red-50 transition-all duration-200 text-left"
+                >
+                  退出登录
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

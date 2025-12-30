@@ -53,6 +53,10 @@ Thumbs.db
 backend/uploads/
 backend/static/
 
+# User data
+backend/data/users.json
+backend/data/user_profiles.json
+
 # Temporary files
 *.tmp
 *.temp

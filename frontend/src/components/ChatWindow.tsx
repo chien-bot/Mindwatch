@@ -115,7 +115,7 @@ export default function ChatWindow({ fixedMode, showHeader = true }: ChatWindowP
   const shouldShowHeader = !fixedMode && showHeader;
 
   return (
-    <div className={`flex flex-col ${fixedMode ? 'h-full' : 'h-screen'} max-w-7xl mx-auto bg-white shadow-2xl`}>
+    <div className={`flex flex-col ${fixedMode ? 'h-full' : 'h-screen'} max-w-7xl mx-auto ${fixedMode ? '' : 'bg-white shadow-2xl'}`}>
       {/* 顶部区域 - 仅在非 fixedMode 时显示完整 header */}
       {shouldShowHeader && (
         <header className="border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50 px-6 py-6">
@@ -133,14 +133,27 @@ export default function ChatWindow({ fixedMode, showHeader = true }: ChatWindowP
       {/* 主内容区域 - 根据模式切换布局 */}
       {mode === 'self_intro' ? (
         // 自我介绍模式：两列布局（Live 练习区 + 聊天区）
-        <div className="flex-1 flex flex-col md:flex-row gap-4 p-4 overflow-hidden self-intro-layout">
+        <div className="flex-1 flex flex-col md:flex-row gap-6 p-6 overflow-hidden self-intro-layout">
           {/* 左侧：Live 练习区 */}
-          <div className="w-full md:w-2/5 flex-shrink-0 h-[400px] md:h-auto">
+          <div className="w-full md:w-2/5 flex-shrink-0 h-[450px] md:h-auto">
             <SelfIntroLivePanel onTranscriptReceived={handleTranscriptReceived} />
           </div>
 
           {/* 右侧：聊天区 */}
-          <div className="flex-1 flex flex-col bg-gradient-to-br from-gray-50 to-blue-50 rounded-xl shadow-lg overflow-hidden">
+          <div className="flex-1 flex flex-col bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-200/50 overflow-hidden">
+            {/* 聊天区标题 */}
+            <div className="px-6 py-4 border-b border-gray-200/50 bg-gradient-to-r from-blue-50/50 to-purple-50/50">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center text-white text-sm shadow-md">
+                  💬
+                </div>
+                <div>
+                  <h2 className="text-sm font-bold text-gray-800">AI 反馈区</h2>
+                  <p className="text-xs text-gray-500">查看转写结果和改进建议</p>
+                </div>
+              </div>
+            </div>
+
             <MessageList messages={messages} isLoading={isLoading} />
 
             {/* 错误提示 */}

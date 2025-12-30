@@ -57,6 +57,7 @@ export default function Product() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<any>(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   // 检查用户登录状态
   useEffect(() => {
@@ -83,6 +84,13 @@ export default function Product() {
 
     checkAuth();
   }, [router]);
+
+  // 触发进入动画
+  useEffect(() => {
+    if (!isLoading) {
+      setTimeout(() => setIsVisible(true), 100);
+    }
+  }, [isLoading]);
 
   const handleCardClick = (module: ModuleCard) => {
     if (module.available) {
@@ -113,14 +121,33 @@ export default function Product() {
       </Head>
 
       {/* 页面内容 */}
-      <main className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 pt-24 pb-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 pt-24 pb-16 relative overflow-hidden">
+        {/* 背景装饰 */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* 动态圆圈 */}
+          <div className="absolute top-20 left-10 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-400/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+          {/* 浮动装饰元素 */}
+          <div className="absolute top-1/4 right-1/4 w-20 h-20 border-2 border-blue-300/20 rounded-full animate-float"></div>
+          <div className="absolute bottom-1/4 left-1/4 w-16 h-16 border-2 border-purple-300/20 rounded-lg rotate-45 animate-float" style={{ animationDelay: '0.5s' }}></div>
+          <div className="absolute top-1/3 left-1/5 w-12 h-12 border-2 border-pink-300/20 rounded-full animate-float" style={{ animationDelay: '1s' }}></div>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           {/* 页面标题 */}
-          <div className="text-center mb-12">
-            <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-              选择练习模式
+          <div className={`text-center mb-12 transition-all duration-700 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-10'
+          }`}>
+            <div className="inline-block px-4 py-2 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full text-sm font-semibold text-blue-700 mb-4 animate-pulse">
+              探索练习模式
+            </div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
+              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                选择练习模式
+              </span>
             </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
               根据你的需求，选择最适合的练习场景。我们的 AI
               教练会针对不同场景给你专业的反馈。
             </p>
@@ -128,26 +155,37 @@ export default function Product() {
 
           {/* 模块卡片网格 */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {MODULES.map((module) => (
-              <ModuleCardComponent
+            {MODULES.map((module, index) => (
+              <div
                 key={module.id}
-                module={module}
-                onClick={() => handleCardClick(module)}
-              />
+                className={`transition-all duration-700 transform ${
+                  isVisible
+                    ? 'opacity-100 translate-y-0'
+                    : 'opacity-0 translate-y-10'
+                }`}
+                style={{ transitionDelay: `${300 + index * 150}ms` }}
+              >
+                <ModuleCardComponent
+                  module={module}
+                  onClick={() => handleCardClick(module)}
+                />
+              </div>
             ))}
           </div>
 
           {/* 底部提示 */}
-          <div className="mt-16 text-center">
+          <div className={`mt-16 text-center transition-all duration-700 ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+          }`} style={{ transitionDelay: '750ms' }}>
             <p className="text-gray-500 text-sm">
               更多练习模式正在开发中，敬请期待...
             </p>
             <Link
               href="/"
-              className="inline-flex items-center gap-2 mt-4 text-blue-600 hover:text-purple-600 transition-colors font-medium"
+              className="group inline-flex items-center gap-2 mt-4 text-blue-600 hover:text-purple-600 transition-all duration-300 font-medium"
             >
               <svg
-                className="w-4 h-4"
+                className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -177,47 +215,107 @@ interface ModuleCardProps {
 }
 
 function ModuleCardComponent({ module, onClick }: ModuleCardProps) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  // 根据模块ID设置不同的渐变色
+  const getGradientColors = (id: string) => {
+    switch (id) {
+      case 'self-intro':
+        return {
+          icon: 'from-blue-500 to-blue-600',
+          button: 'from-blue-600 to-blue-700',
+          glow: 'from-blue-600 to-blue-600',
+          bg: 'from-blue-400/10 to-blue-600/10',
+        };
+      case 'interview':
+        return {
+          icon: 'from-purple-500 to-purple-600',
+          button: 'from-purple-600 to-purple-700',
+          glow: 'from-purple-600 to-purple-600',
+          bg: 'from-purple-400/10 to-purple-600/10',
+        };
+      case 'ppt':
+        return {
+          icon: 'from-pink-500 to-pink-600',
+          button: 'from-pink-600 to-pink-700',
+          glow: 'from-pink-600 to-pink-600',
+          bg: 'from-pink-400/10 to-pink-600/10',
+        };
+      default:
+        return {
+          icon: 'from-gray-400 to-gray-500',
+          button: 'from-gray-600 to-gray-700',
+          glow: 'from-gray-600 to-gray-600',
+          bg: 'from-gray-400/10 to-gray-600/10',
+        };
+    }
+  };
+
+  const colors = getGradientColors(module.id);
+
   return (
     <div
       className={`
-        relative overflow-hidden rounded-2xl bg-white border border-gray-100
+        group relative overflow-hidden rounded-2xl bg-white/90 backdrop-blur-sm border border-gray-100
         shadow-lg transition-all duration-300
         ${
           module.available
-            ? 'hover:shadow-2xl hover:-translate-y-1 cursor-pointer'
+            ? 'hover:shadow-2xl hover:-translate-y-2 cursor-pointer'
             : 'opacity-75'
         }
       `}
       onClick={onClick}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
+      {/* 卡片背景光晕 */}
+      {module.available && (
+        <div className={`absolute -inset-0.5 bg-gradient-to-r ${colors.glow} rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-500`}></div>
+      )}
+
+      {/* 背景装饰 */}
+      {module.available && (
+        <div className={`absolute top-0 right-0 w-40 h-40 bg-gradient-to-br ${colors.bg} rounded-full blur-2xl transform translate-x-20 -translate-y-20 group-hover:scale-150 transition-transform duration-500`}></div>
+      )}
+
       {/* 不可用标签 */}
       {!module.available && (
-        <div className="absolute top-4 right-4 px-3 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-full">
+        <div className="absolute top-4 right-4 px-3 py-1 bg-gray-100 text-gray-500 text-xs font-medium rounded-full z-10">
           即将推出
         </div>
       )}
 
       {/* 卡片内容 */}
-      <div className="p-8">
+      <div className="relative p-8">
         {/* 图标 */}
         <div
           className={`
-            w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-6
+            w-16 h-16 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-lg
+            transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300
             ${
               module.available
-                ? 'bg-gradient-to-br from-blue-100 to-purple-100'
+                ? `bg-gradient-to-br ${colors.icon}`
                 : 'bg-gray-100'
             }
           `}
         >
-          {module.icon}
+          <span className={module.available ? 'filter drop-shadow-sm' : ''}>{module.icon}</span>
         </div>
 
         {/* 标题 */}
-        <h3 className="text-xl font-bold text-gray-900 mb-3">{module.title}</h3>
+        <h3 className={`text-xl font-bold mb-3 transition-all duration-300 ${
+          module.available
+            ? 'text-gray-900 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:bg-clip-text ' +
+              (module.id === 'self-intro' ? 'group-hover:from-blue-600 group-hover:to-blue-700' :
+               module.id === 'interview' ? 'group-hover:from-purple-600 group-hover:to-purple-700' :
+               'group-hover:from-pink-600 group-hover:to-pink-700')
+            : 'text-gray-500'
+        }`}>
+          {module.title}
+        </h3>
 
         {/* 描述 */}
-        <p className="text-gray-600 mb-6 leading-relaxed">
+        <p className="text-gray-600 mb-6 leading-relaxed text-sm">
           {module.description}
         </p>
 
@@ -248,15 +346,15 @@ function ModuleCardComponent({ module, onClick }: ModuleCardProps) {
         {/* 按钮 */}
         {module.available ? (
           <button
-            className="w-full py-3 px-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
+            className={`group/btn relative w-full py-3 px-6 bg-gradient-to-r ${colors.button} text-white font-semibold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 overflow-hidden`}
             onClick={(e) => {
               e.stopPropagation();
               onClick();
             }}
           >
-            {module.buttonText}
+            <span className="relative z-10">{module.buttonText}</span>
             <svg
-              className="w-4 h-4"
+              className="relative z-10 w-4 h-4 group-hover/btn:translate-x-1 transition-transform duration-300"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -268,6 +366,8 @@ function ModuleCardComponent({ module, onClick }: ModuleCardProps) {
                 d="M13 7l5 5m0 0l-5 5m5-5H6"
               />
             </svg>
+            {/* 悬停背景效果 */}
+            <div className={`absolute inset-0 bg-gradient-to-r ${colors.button} opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300 brightness-110`}></div>
           </button>
         ) : (
           <button
@@ -277,12 +377,12 @@ function ModuleCardComponent({ module, onClick }: ModuleCardProps) {
             {module.buttonText}
           </button>
         )}
-      </div>
 
-      {/* 可用卡片的装饰边框 */}
-      {module.available && (
-        <div className="absolute inset-0 rounded-2xl border-2 border-transparent hover:border-blue-200 transition-colors pointer-events-none"></div>
-      )}
+        {/* 底部装饰条 */}
+        {module.available && (
+          <div className={`absolute bottom-0 left-0 h-1 bg-gradient-to-r ${colors.icon} transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500`}></div>
+        )}
+      </div>
     </div>
   );
 }

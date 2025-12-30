@@ -158,9 +158,24 @@ async def upload_ppt(file: UploadFile = File(...)):
         if static_dir.exists():
             shutil.rmtree(static_dir)
 
+        # 记录详细错误信息
+        import traceback
+        error_msg = f"PPT upload error: {type(e).__name__}"
+        error_details = traceback.format_exc()
+
+        # 打印到控制台（确保可见）
+        print("=" * 80)
+        print(error_msg)
+        print("=" * 80)
+        print(error_details)
+        print("=" * 80)
+
+        logger.error(error_msg)
+        logger.error(f"Error details: {error_details}")
+
         raise HTTPException(
             status_code=500,
-            detail=f"处理文件失败: {str(e)}"
+            detail=f"File processing failed: {str(e)}"
         )
 
 

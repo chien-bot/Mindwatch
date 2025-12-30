@@ -27,6 +27,7 @@ export default function SelfIntroLivePanel({
   const mediaStreamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const mimeTypeRef = useRef<string>('audio/webm'); // 存储使用的 MIME 类型
 
   // 组件卸载时停止媒体流
   useEffect(() => {
@@ -104,6 +105,30 @@ export default function SelfIntroLivePanel({
   };
 
   /**
+   * 获取浏览器支持的 MIME 类型
+   */
+  const getSupportedMimeType = (): string => {
+    const types = [
+      'audio/webm',
+      'audio/webm;codecs=opus',
+      'audio/ogg;codecs=opus',
+      'audio/mp4',
+      'audio/mpeg',
+      'audio/wav',
+    ];
+
+    for (const type of types) {
+      if (MediaRecorder.isTypeSupported(type)) {
+        console.log(`使用支持的 MIME 类型: ${type}`);
+        return type;
+      }
+    }
+
+    console.log('使用默认 MIME 类型');
+    return ''; // 使用浏览器默认
+  };
+
+  /**
    * 开始录制
    */
   const startRecording = () => {
@@ -116,29 +141,82 @@ export default function SelfIntroLivePanel({
       // 清空之前的录音数据
       audioChunksRef.current = [];
 
-      // 创建 MediaRecorder
-      const mediaRecorder = new MediaRecorder(mediaStreamRef.current, {
-        mimeType: 'audio/webm',
+      // 检查媒体流的轨道
+      const audioTracks = mediaStreamRef.current.getAudioTracks();
+      const videoTracks = mediaStreamRef.current.getVideoTracks();
+      console.log('媒体流信息:', {
+        audioTracks: audioTracks.length,
+        videoTracks: videoTracks.length,
+        audioEnabled: audioTracks.length > 0 ? audioTracks[0].enabled : false,
+        videoEnabled: videoTracks.length > 0 ? videoTracks[0].enabled : false,
       });
 
+      if (audioTracks.length === 0) {
+        throw new Error('未检测到音频轨道，请检查麦克风权限');
+      }
+
+      // 创建一个只包含音频轨道的 MediaStream
+      // 这样可以避免 video+audio 流与 audio MIME 类型不匹配的问题
+      const audioOnlyStream = new MediaStream(audioTracks);
+      console.log('创建纯音频流:', {
+        id: audioOnlyStream.id,
+        active: audioOnlyStream.active,
+        audioTracks: audioOnlyStream.getAudioTracks().length,
+      });
+
+      // 获取支持的 MIME 类型
+      const mimeType = getSupportedMimeType();
+      console.log(`准备使用 MIME 类型: ${mimeType || '浏览器默认'}`);
+
+      // 保存使用的 MIME 类型，用于后续创建 Blob
+      mimeTypeRef.current = mimeType || 'audio/webm';
+
+      // 创建 MediaRecorder，使用纯音频流
+      const options = mimeType ? { mimeType } : {};
+      console.log('创建 MediaRecorder，配置:', options);
+
+      const mediaRecorder = new MediaRecorder(audioOnlyStream, options);
+
+      console.log('MediaRecorder 创建成功');
+      console.log('- state:', mediaRecorder.state);
+      console.log('- mimeType:', mediaRecorder.mimeType);
+      console.log('- stream active:', mediaStreamRef.current.active);
+
       mediaRecorder.ondataavailable = (event) => {
+        console.log('ondataavailable:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
 
       mediaRecorder.onstop = async () => {
+        console.log('录制停止，开始处理音频');
         // 录制结束，上传音频
         await handleRecordingComplete();
       };
 
+      mediaRecorder.onerror = (event: Event) => {
+        console.error('MediaRecorder 错误:', event);
+        const errorEvent = event as ErrorEvent;
+        setError(`录制错误: ${errorEvent.message || '未知错误'}`);
+        setRecordingState('idle');
+      };
+
+      console.log('准备调用 mediaRecorder.start()...');
       mediaRecorder.start();
+      console.log('MediaRecorder.start() 调用成功，当前 state:', mediaRecorder.state);
+
       mediaRecorderRef.current = mediaRecorder;
       setRecordingState('recording');
       setError(null);
     } catch (err) {
       console.error('开始录制失败:', err);
-      setError('开始录制失败，请重试。');
+      console.error('错误详情:', {
+        name: err instanceof Error ? err.name : 'Unknown',
+        message: err instanceof Error ? err.message : String(err),
+        stack: err instanceof Error ? err.stack : undefined,
+      });
+      setError(`开始录制失败: ${err instanceof Error ? err.message : '未知错误'}，请重试。`);
     }
   };
 
@@ -159,11 +237,13 @@ export default function SelfIntroLivePanel({
     setRecordingState('processing');
 
     try {
-      // 将录音数据合并成一个 Blob
-      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+      // 将录音数据合并成一个 Blob，使用录制时的 MIME 类型
+      const audioBlob = new Blob(audioChunksRef.current, { type: mimeTypeRef.current });
+      console.log(`创建音频 Blob: ${audioBlob.size} bytes, type: ${mimeTypeRef.current}`);
 
       // 上传到后端
       const result = await uploadSelfIntroAudio(audioBlob);
+      console.log('音频上传成功:', result);
 
       // 通知父组件
       onTranscriptReceived(result.transcript, result.reply, result.demo_text || '');

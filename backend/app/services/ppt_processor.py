@@ -127,9 +127,11 @@ class PPTProcessor:
 
         # 对于 PPTX，我们需要将其转换为 PDF，然后再转为图片
         # 这需要 LibreOffice 或其他工具
-        # 简化版：我们先转换为 PDF 再处理
+        # 尝试使用 LibreOffice 转换
         pdf_path = self._convert_pptx_to_pdf(pptx_path)
+
         if pdf_path:
+            # LibreOffice 转换成功，使用 PDF 转图片
             images = convert_from_path(pdf_path, dpi=200)
 
             for idx, image in enumerate(images):
@@ -148,7 +150,47 @@ class PPTProcessor:
             # 清理临时 PDF
             os.remove(pdf_path)
         else:
-            raise RuntimeError("无法转换 PPTX 为 PDF")
+            # LibreOffice 不可用，使用备用方案：生成简单的文本图片
+            from PIL import Image, ImageDraw, ImageFont
+            import textwrap
+
+            for idx, slide_text in enumerate(texts):
+                slide_number = idx + 1
+                image_filename = f"slide_{slide_number}.png"
+                image_path = self.output_dir / image_filename
+
+                # 创建一个 1920x1080 的白色背景图片
+                img = Image.new('RGB', (1920, 1080), color='white')
+                draw = ImageDraw.Draw(img)
+
+                # 尝试使用系统字体，如果失败则使用默认字体
+                try:
+                    # Windows 系统字体路径
+                    font_large = ImageFont.truetype("C:/Windows/Fonts/msyh.ttc", 48)
+                    font_small = ImageFont.truetype("C:/Windows/Fonts/msyh.ttc", 32)
+                except:
+                    font_large = ImageFont.load_default()
+                    font_small = ImageFont.load_default()
+
+                # 绘制标题
+                title = f"Slide {slide_number}"
+                draw.text((100, 100), title, fill='black', font=font_large)
+
+                # 绘制文本内容（换行处理）
+                if slide_text:
+                    wrapped_text = textwrap.fill(slide_text, width=60)
+                    draw.text((100, 200), wrapped_text, fill='#333333', font=font_small)
+                else:
+                    draw.text((100, 200), "(No text content)", fill='#999999', font=font_small)
+
+                # 保存图片
+                img.save(str(image_path), 'PNG')
+
+                results.append((str(image_path), slide_text))
+
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.warning("Using fallback text-to-image conversion (LibreOffice not available)")
 
         return results
 
@@ -164,41 +206,58 @@ class PPTProcessor:
         """
         try:
             import subprocess
+            import sys
 
             # 创建临时目录
             temp_dir = tempfile.mkdtemp()
             output_pdf = os.path.join(temp_dir, "output.pdf")
 
+            # 在 Windows 上设置正确的编码环境
+            env = os.environ.copy()
+            if sys.platform == 'win32':
+                env['PYTHONIOENCODING'] = 'utf-8'
+
             # 使用 LibreOffice 转换
             # 注意：需要系统安装 LibreOffice
-            subprocess.run([
+            result = subprocess.run([
                 'soffice',
                 '--headless',
                 '--convert-to', 'pdf',
                 '--outdir', temp_dir,
                 pptx_path
-            ], check=True, capture_output=True)
+            ], check=True, capture_output=True, text=True, encoding='utf-8', errors='replace', env=env)
 
             # 查找生成的 PDF 文件
             pdf_files = list(Path(temp_dir).glob('*.pdf'))
             if pdf_files:
                 return str(pdf_files[0])
             else:
-                raise RuntimeError("未找到转换后的 PDF 文件")
+                raise RuntimeError("Converted PDF file not found")
 
-        except FileNotFoundError:
-            print("LibreOffice 未安装，无法转换 PPTX")
+        except FileNotFoundError as e:
+            # LibreOffice not installed
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error("LibreOffice not installed, cannot convert PPTX to PDF")
+            return None
+        except subprocess.CalledProcessError as e:
+            import logging
+            logger = logging.getLogger(__name__)
+            # 避免直接打印可能包含非 ASCII 字符的错误信息
+            logger.error(f"PPTX to PDF conversion failed with exit code: {e.returncode}")
             return None
         except Exception as e:
-            print(f"PPTX 转 PDF 失败: {str(e)}")
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"PPTX to PDF conversion error: {type(e).__name__}")
             return None
 
     def _convert_ppt_to_pdf_and_process(self, ppt_path: str) -> List[Tuple[str, str]]:
         """
-        将 .ppt 文件转换为 PDF 再处理
+        Convert .ppt file to PDF and process
 
         Args:
-            ppt_path: .ppt 文件路径
+            ppt_path: .ppt file path
 
         Returns:
             List of (image_path, text_content) tuples
@@ -209,21 +268,21 @@ class PPTProcessor:
             os.remove(pdf_path)
             return results
         else:
-            raise RuntimeError("无法转换 .ppt 文件，请先将其转换为 .pptx 或 PDF")
+            raise RuntimeError("Cannot convert .ppt file, please convert to .pptx or PDF first")
 
 
 def get_file_type(filename: str) -> str:
     """
-    根据文件名判断文件类型
+    Determine file type from filename
 
     Args:
-        filename: 文件名
+        filename: filename
 
     Returns:
-        文件类型 (pdf, ppt, pptx)
+        file type (pdf, ppt, pptx)
     """
     ext = filename.lower().split('.')[-1]
     if ext in ['pdf', 'ppt', 'pptx']:
         return ext
     else:
-        raise ValueError(f"不支持的文件类型: {ext}")
+        raise ValueError(f"Unsupported file type: {ext}")

@@ -9,21 +9,21 @@ import Link from 'next/link';
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-400">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col md:flex-row justify-between items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           {/* 品牌信息 */}
-          <div className="mb-6 md:mb-0 text-center md:text-left">
+          <div className="text-center md:text-left">
             <Link
               href="/"
-              className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
+              className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent"
             >
               SpeakMate
             </Link>
-            <p className="mt-2 text-sm">AI 口语教练 - 让表达更自信</p>
+            <p className="mt-1 text-xs">AI 口语教练 - 让表达更自信</p>
           </div>
 
           {/* 链接 */}
-          <div className="flex flex-wrap justify-center gap-6 text-sm">
+          <div className="flex flex-wrap justify-center gap-4 text-xs">
             <Link
               href="/product"
               className="hover:text-white transition-colors"
@@ -43,7 +43,7 @@ export default function Footer() {
         </div>
 
         {/* 版权信息 */}
-        <div className="mt-8 pt-8 border-t border-gray-800 text-center text-sm">
+        <div className="mt-4 pt-4 border-t border-gray-800 text-center text-xs">
           <p>
             &copy; {new Date().getFullYear()} SpeakMate. Made for students to
             practice speaking with confidence.

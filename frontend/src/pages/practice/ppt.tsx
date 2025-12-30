@@ -29,6 +29,7 @@ export default function PPTPracticePage() {
   const [presentationId, setPresentationId] = useState<string | null>(null);
   const [isPresenting, setIsPresenting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
 
   // 检查登录状态
   useEffect(() => {
@@ -39,6 +40,13 @@ export default function PPTPracticePage() {
       setIsLoading(false);
     }
   }, [router]);
+
+  // 触发进入动画
+  useEffect(() => {
+    if (!isLoading) {
+      setTimeout(() => setIsVisible(true), 100);
+    }
+  }, [isLoading]);
 
   /**
    * 处理 PPT 上传成功
@@ -93,18 +101,30 @@ export default function PPTPracticePage() {
       </Head>
 
       {/* 练习页面 - 全屏沉浸式布局 */}
-      <div className="h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="h-screen flex flex-col bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 relative overflow-hidden">
+        {/* 背景装饰元素 */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* 动态渐变圆圈 */}
+          <div className="absolute top-20 left-10 w-96 h-96 bg-pink-400/10 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-400/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+          {/* 浮动装饰图形 */}
+          <div className="absolute top-1/4 right-1/4 w-20 h-20 border-2 border-pink-300/20 rounded-full animate-float"></div>
+          <div className="absolute bottom-1/4 left-1/4 w-16 h-16 border-2 border-purple-300/20 rounded-lg rotate-45 animate-float" style={{ animationDelay: '0.5s' }}></div>
+          <div className="absolute top-1/3 left-1/5 w-12 h-12 border-2 border-blue-300/20 rounded-full animate-float" style={{ animationDelay: '1s' }}></div>
+        </div>
+
         {/* 顶部导航条（最小化设计） */}
         {!isPresenting && (
-          <header className="flex-shrink-0 bg-white/80 backdrop-blur-xl border-b border-gray-200 px-4 sm:px-6 py-3">
+          <header className="relative z-10 flex-shrink-0 px-4 sm:px-6 py-4">
             <div className="max-w-7xl mx-auto flex items-center justify-between">
-              {/* 返回按钮 */}
+              {/* 返回按钮 - 左对齐 */}
               <Link
                 href="/product"
-                className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors font-medium text-sm group"
+                className="group inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm hover:bg-white/90 rounded-xl shadow-md hover:shadow-lg text-gray-700 hover:text-pink-600 transition-all duration-300 font-medium text-sm border border-gray-200/50"
               >
                 <svg
-                  className="w-4 h-4 group-hover:-translate-x-1 transition-transform"
+                  className="w-5 h-5 group-hover:-translate-x-1 transition-transform duration-300"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -119,43 +139,45 @@ export default function PPTPracticePage() {
                 返回
               </Link>
 
-              {/* 页面标题 */}
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-lg opacity-50"></div>
-                  <div className="relative w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-xl">
-                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                  </div>
+              {/* 页面标题 - 居中 */}
+              <div className="absolute left-1/2 -translate-x-1/2 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center text-white text-xl shadow-lg">
+                  📊
                 </div>
-                <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  PPT 演讲练习
-                </h1>
+                <div>
+                  <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
+                    PPT 演讲练习
+                  </h1>
+                  <p className="text-xs text-gray-500 hidden sm:block">
+                    AI 实时反馈，提升演讲能力
+                  </p>
+                </div>
               </div>
 
               {/* 占位（保持对称） */}
-              <div className="w-16"></div>
+              <div className="w-20"></div>
             </div>
           </header>
         )}
 
         {/* 主内容区域 */}
-        <main className="flex-1 overflow-y-auto">
+        <main className="relative z-10 flex-1 overflow-y-auto">
           {isPresenting && slides && presentationId ? (
             // 演讲模式：全屏展示
             <PPTPresenter slides={slides} presentationId={presentationId} onExit={exitPresentation} />
           ) : slides ? (
             // 已上传 PPT：显示预览和开始按钮
-            <div className="min-h-full flex flex-col items-center py-8 px-8">
-              <div className="max-w-4xl w-full bg-white rounded-3xl shadow-2xl p-8 border border-gray-200">
+            <div className={`min-h-full flex flex-col items-center py-8 px-8 transition-all duration-700 ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+            }`}>
+              <div className="max-w-4xl w-full bg-white/90 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-gray-200/50">
                 <div className="text-center mb-6">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full mb-4 shadow-lg">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full mb-4 shadow-lg transform hover:scale-110 transition-transform duration-300">
                     <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                   </div>
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  <h2 className="text-2xl font-bold bg-gradient-to-r from-pink-600 to-purple-600 bg-clip-text text-transparent">
                     PPT 已准备好
                   </h2>
                 </div>
@@ -181,7 +203,7 @@ export default function PPTPracticePage() {
                 <div className="flex gap-4">
                   <button
                     onClick={startPresentation}
-                    className="flex-1 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:shadow-purple-500/50 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                    className="flex-1 py-4 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl hover:shadow-pink-500/50 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
                   >
                     <svg
                       className="w-5 h-5"
@@ -195,16 +217,16 @@ export default function PPTPracticePage() {
 
                   <button
                     onClick={resetUpload}
-                    className="px-6 py-4 bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-300 hover:border-gray-400 font-semibold rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5"
+                    className="px-6 py-4 bg-white/80 backdrop-blur-sm hover:bg-white/90 text-gray-700 border-2 border-gray-300 hover:border-pink-300 font-semibold rounded-xl shadow-lg transition-all transform hover:-translate-y-0.5"
                   >
                     重新上传
                   </button>
                 </div>
 
                 {/* 使用提示 */}
-                <div className="mt-8 p-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl border border-blue-200">
+                <div className="mt-8 p-6 bg-gradient-to-br from-pink-50 to-purple-50 rounded-xl border border-pink-200">
                   <div className="flex items-center gap-2 mb-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-pink-500 to-purple-500 flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                       </svg>
@@ -215,25 +237,25 @@ export default function PPTPracticePage() {
                   </div>
                   <ul className="text-sm text-gray-700 space-y-2">
                     <li className="flex items-start gap-2">
-                      <svg className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4 text-pink-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                       使用键盘左右箭头键翻页
                     </li>
                     <li className="flex items-start gap-2">
-                      <svg className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4 text-pink-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                       点击幻灯片或使用翻页按钮
                     </li>
                     <li className="flex items-start gap-2">
-                      <svg className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4 text-pink-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                       录制完成后可查看回放或获取 AI 分析
                     </li>
                     <li className="flex items-start gap-2">
-                      <svg className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4 text-pink-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
                       建议录制完整演讲以获得最佳 AI 反馈

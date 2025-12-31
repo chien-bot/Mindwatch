@@ -406,29 +406,35 @@ export default function InterviewCallPage() {
         <title>AI 面试进行中 - SpeakMate</title>
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4 relative overflow-hidden">
+        {/* 背景装饰 */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-20 left-10 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl animate-pulse"></div>
+          <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-purple-400/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        </div>
+
         {/* 通话界面 */}
-        <div className="max-w-md w-full">
+        <div className="max-w-md w-full relative z-10">
           {/* 5秒倒计时准备 */}
           {callState === 'countdown' && (
             <div className="text-center animate-in fade-in zoom-in-95 duration-500">
               <div className="relative inline-block mb-8">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-3xl opacity-50 animate-pulse"></div>
-                <div className="relative w-48 h-48 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+                <div className="relative w-48 h-48 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-purple-600 flex items-center justify-center shadow-2xl">
                   <div className="text-8xl font-bold text-white animate-pulse">{countdown}</div>
                 </div>
               </div>
-              <h2 className="text-3xl font-bold text-white mb-3">面试即将开始</h2>
-              <p className="text-xl text-gray-300 mb-2">{positionName}</p>
-              <p className="text-sm text-gray-400">请深呼吸，放轻松</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-3">面试即将开始</h2>
+              <p className="text-xl text-gray-700 mb-2">{positionName}</p>
+              <p className="text-sm text-gray-600">请深呼吸，放轻松</p>
 
-              <div className="mt-8 space-y-2 text-sm text-blue-300">
+              <div className="mt-8 space-y-2 text-sm text-gray-700">
                 <div className="flex items-center justify-center gap-2">
-                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                   <span>检查麦克风权限</span>
                 </div>
                 <div className="flex items-center justify-center gap-2">
-                  <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
                   <span>连接 AI 面试官</span>
                 </div>
               </div>
@@ -439,25 +445,25 @@ export default function InterviewCallPage() {
           {callState === 'calling' && (
             <div className="text-center animate-in fade-in zoom-in-95 duration-500">
               <div className="relative inline-block mb-8">
-                <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full blur-3xl opacity-50"></div>
-                <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 flex items-center justify-center shadow-2xl">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-3xl opacity-30"></div>
+                <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-purple-600 flex items-center justify-center shadow-2xl">
                   <svg className="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                   </svg>
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">准备就绪！</h2>
-              <p className="text-gray-400 mb-6">{positionName} - AI 面试官</p>
-              <p className="text-sm text-gray-500 mb-8 max-w-md mx-auto">
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">准备就绪！</h2>
+              <p className="text-gray-700 mb-6">{positionName} - AI 面试官</p>
+              <p className="text-sm text-gray-600 mb-8 max-w-md mx-auto">
                 点击下方按钮开始面试。面试过程中，AI 会通过语音提问，你可以按住按钮或空格键录音回答。
               </p>
               <button
                 onClick={initInterview}
-                className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:shadow-green-500/50 transition-all transform hover:scale-105 text-lg"
+                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg hover:shadow-xl hover:shadow-purple-500/50 transition-all transform hover:scale-105 text-lg"
               >
                 🎙️ 开始面试
               </button>
-              <p className="text-xs text-gray-600 mt-4">
+              <p className="text-xs text-gray-500 mt-4">
                 💡 提示：点击按钮后，请允许浏览器播放音频
               </p>
             </div>
@@ -467,19 +473,19 @@ export default function InterviewCallPage() {
           {callState === 'connecting' && (
             <div className="text-center animate-in fade-in zoom-in-95 duration-500">
               <div className="relative inline-block mb-8">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-3xl opacity-50 animate-pulse"></div>
-                <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-2xl animate-bounce">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-3xl opacity-30 animate-pulse"></div>
+                <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-purple-600 flex items-center justify-center shadow-2xl animate-bounce">
                   <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                   </svg>
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">连接中...</h2>
-              <p className="text-gray-400">{positionName} - AI 面试官</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">连接中...</h2>
+              <p className="text-gray-700">{positionName} - AI 面试官</p>
               <div className="mt-6 flex justify-center gap-1">
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-ping"></div>
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '0.2s' }}></div>
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-ping" style={{ animationDelay: '0.4s' }}></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-ping"></div>
+                <div className="w-2 h-2 bg-purple-500 rounded-full animate-ping" style={{ animationDelay: '0.2s' }}></div>
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-ping" style={{ animationDelay: '0.4s' }}></div>
               </div>
             </div>
           )}
@@ -492,27 +498,27 @@ export default function InterviewCallPage() {
                 <div className="relative inline-block mb-4">
                   {isSpeaking && (
                     <>
-                      <div className="absolute inset-0 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full blur-2xl opacity-50 animate-pulse"></div>
-                      <div className="absolute inset-0 rounded-full border-4 border-green-400 animate-ping"></div>
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full blur-2xl opacity-30 animate-pulse"></div>
+                      <div className="absolute inset-0 rounded-full border-4 border-blue-400 animate-ping"></div>
                     </>
                   )}
-                  <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 flex items-center justify-center shadow-2xl">
+                  <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 via-purple-500 to-purple-600 flex items-center justify-center shadow-2xl">
                     <svg className="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
                   </div>
                 </div>
 
-                <h3 className="text-xl font-bold text-white mb-1">{positionName}</h3>
-                <p className="text-sm text-gray-400 mb-2">AI 面试官</p>
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-900/30 border border-green-500/50 rounded-full">
-                  <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-xs text-green-300">{formatDuration(callDuration)}</span>
+                <h3 className="text-xl font-bold text-gray-900 mb-1">{positionName}</h3>
+                <p className="text-sm text-gray-600 mb-2">AI 面试官</p>
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                  <span className="text-xs text-blue-700 font-medium">{formatDuration(callDuration)}</span>
                 </div>
               </div>
 
               {/* 对话记录（滚动区域） */}
-              <div className="bg-gradient-to-br from-gray-900/50 to-gray-800/50 rounded-2xl border border-white/10 p-4 mb-6 max-h-60 overflow-y-auto backdrop-blur-sm">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-gray-200 p-4 mb-6 max-h-60 overflow-y-auto shadow-lg">
                 {messages.length === 0 ? (
                   <p className="text-center text-gray-500 text-sm">等待 AI 面试官...</p>
                 ) : (
@@ -525,8 +531,8 @@ export default function InterviewCallPage() {
                         <div
                           className={`max-w-[80%] px-4 py-2 rounded-xl ${
                             msg.role === 'user'
-                              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white'
-                              : 'bg-gray-700/50 text-gray-200 border border-gray-600'
+                              ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                              : 'bg-gray-100 text-gray-800 border border-gray-200'
                           }`}
                         >
                           <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
@@ -545,7 +551,7 @@ export default function InterviewCallPage() {
 
               {/* 错误提示 */}
               {error && (
-                <div className="mb-4 p-3 bg-red-900/40 border border-red-500/50 rounded-xl text-red-300 text-sm">
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
                   {error}
                 </div>
               )}
@@ -562,8 +568,8 @@ export default function InterviewCallPage() {
                     isRecording
                       ? 'bg-red-500 shadow-2xl shadow-red-500/50 scale-110'
                       : isSpeaking || isProcessing
-                      ? 'bg-gray-600 cursor-not-allowed'
-                      : 'bg-gradient-to-br from-blue-500 to-purple-600 hover:shadow-2xl hover:shadow-purple-500/50 hover:scale-105'
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-gradient-to-br from-blue-600 to-purple-600 hover:shadow-2xl hover:shadow-purple-500/50 hover:scale-105'
                   }`}
                 >
                   {isProcessing ? (
@@ -578,7 +584,7 @@ export default function InterviewCallPage() {
                 </button>
 
                 <div className="text-center">
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-gray-700 font-medium">
                     {isRecording
                       ? '🔴 松开结束录音'
                       : isSpeaking
@@ -609,15 +615,15 @@ export default function InterviewCallPage() {
           {callState === 'ended' && (
             <div className="text-center animate-in fade-in zoom-in-95 duration-500">
               <div className="relative inline-block mb-8">
-                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-700 to-gray-600 flex items-center justify-center shadow-2xl">
-                  <svg className="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="w-32 h-32 rounded-full bg-gradient-to-br from-gray-300 to-gray-400 flex items-center justify-center shadow-2xl">
+                  <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </div>
               </div>
-              <h2 className="text-2xl font-bold text-white mb-2">面试已结束</h2>
-              <p className="text-gray-400">感谢参加本次面试</p>
-              <p className="text-sm text-gray-500 mt-2">时长: {formatDuration(callDuration)}</p>
+              <h2 className="text-2xl font-bold text-gray-900 mb-2">面试已结束</h2>
+              <p className="text-gray-700">感谢参加本次面试</p>
+              <p className="text-sm text-gray-600 mt-2">时长: {formatDuration(callDuration)}</p>
             </div>
           )}
         </div>

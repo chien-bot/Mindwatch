@@ -98,7 +98,7 @@ export default function InterviewResultPage() {
         <title>面试分析报告 - SpeakMate</title>
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950">
+      <div className="min-h-screen bg-gradient-to-br from-blue-950 via-purple-950 to-pink-950">
         {/* 顶部导航 */}
         <header className="bg-black/20 backdrop-blur-xl border-b border-white/10 px-4 sm:px-6 py-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between">

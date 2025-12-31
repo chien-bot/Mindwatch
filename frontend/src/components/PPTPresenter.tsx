@@ -55,6 +55,7 @@ export default function PPTPresenter({ slides, presentationId, onExit }: PPTPres
   const slideImagesRef = useRef<{ [key: number]: HTMLImageElement }>({});
   const currentSlideRef = useRef<number>(0);
   const isRecordingRef = useRef<boolean>(false);
+  const canvasStreamRef = useRef<MediaStream | null>(null);
 
   // 组件卸载时清理
   useEffect(() => {
@@ -279,8 +280,21 @@ export default function PPTPresenter({ slides, presentationId, onExit }: PPTPres
    * 开始录制（录制 Canvas: PPT + 摄像头画中画）
    */
   const startRecording = () => {
+    // 检查摄像头状态
     if (!mediaStreamRef.current || !isCameraOn) {
       setError('请先开启摄像头。');
+      return;
+    }
+
+    // 检查媒体流是否仍然有效（某些浏览器可能会在录制后停用轨道）
+    const tracks = mediaStreamRef.current.getTracks();
+    const allTracksActive = tracks.length > 0 && tracks.every(track => track.readyState === 'live');
+
+    if (!allTracksActive) {
+      console.log('[startRecording] 检测到媒体流轨道已失效，需要重新开启摄像头');
+      setError('摄像头连接已断开，请重新开启摄像头。');
+      setIsCameraOn(false);
+      mediaStreamRef.current = null;
       return;
     }
 
@@ -368,11 +382,14 @@ export default function PPTPresenter({ slides, presentationId, onExit }: PPTPres
 
       // 从 Canvas 获取视频流
       const canvasStream = canvas.captureStream(30); // 30 FPS
+      canvasStreamRef.current = canvasStream; // 保存引用以便清理
 
-      // 从摄像头获取音频流
+      // 从摄像头获取音频流 - 克隆轨道以避免原始轨道受影响
       const audioTrack = mediaStreamRef.current.getAudioTracks()[0];
       if (audioTrack) {
-        canvasStream.addTrack(audioTrack);
+        // 克隆音频轨道，这样停止录制时不会影响原始媒体流
+        const clonedAudioTrack = audioTrack.clone();
+        canvasStream.addTrack(clonedAudioTrack);
       }
 
       // 创建 MediaRecorder 录制 Canvas 流
@@ -423,6 +440,12 @@ export default function PPTPresenter({ slides, presentationId, onExit }: PPTPres
     if (mediaRecorderRef.current && recordingState === 'recording') {
       mediaRecorderRef.current.stop();
       mediaRecorderRef.current = null;
+    }
+
+    // 清理 canvas stream 中的克隆轨道，避免影响原始媒体流
+    if (canvasStreamRef.current) {
+      canvasStreamRef.current.getTracks().forEach(track => track.stop());
+      canvasStreamRef.current = null;
     }
   };
 
@@ -484,6 +507,40 @@ export default function PPTPresenter({ slides, presentationId, onExit }: PPTPres
     setRecordingState('idle');
     setShowPlaybackModal(false);
     setShowChoiceModal(false);
+    setError(null); // 清除错误消息
+
+    // 检查摄像头是否仍然在运行，如果不在则提示用户
+    if (!isCameraOn || !mediaStreamRef.current) {
+      // 重置摄像头状态，让用户可以重新开启
+      setIsCameraOn(false);
+      mediaStreamRef.current = null;
+      // 不显示错误，直接让用户看到开启摄像头的按钮
+    } else {
+      // 检查媒体流轨道是否仍然有效
+      const tracks = mediaStreamRef.current.getTracks();
+      const allTracksActive = tracks.length > 0 && tracks.every(track => track.readyState === 'live');
+
+      if (!allTracksActive) {
+        console.log('[handleRerecord] 摄像头轨道已失效，重置状态');
+        setIsCameraOn(false);
+        mediaStreamRef.current = null;
+        // 不显示错误，直接让用户看到开启摄像头的按钮
+      } else {
+        // 轨道仍然有效，确保视频元素正确连接并播放
+        setTimeout(() => {
+          if (videoRef.current && mediaStreamRef.current) {
+            // 重新连接视频元素
+            videoRef.current.srcObject = mediaStreamRef.current;
+            videoRef.current.play().catch(err => {
+              console.error('[handleRerecord] 视频播放失败:', err);
+              // 如果播放失败，重置摄像头状态
+              setIsCameraOn(false);
+              mediaStreamRef.current = null;
+            });
+          }
+        }, 100);
+      }
+    }
   };
 
   /**
@@ -571,7 +628,7 @@ export default function PPTPresenter({ slides, presentationId, onExit }: PPTPres
   };
 
   return (
-    <div className="h-full flex gap-6 p-6 bg-gradient-to-br from-slate-950 via-blue-950 to-indigo-950">
+    <div className="h-full flex gap-6 p-6 bg-gradient-to-br from-blue-950 via-purple-950 to-pink-950">
       {/* 隐藏的 Canvas 用于录制 PPT + 摄像头 */}
       <canvas ref={canvasRef} style={{ display: 'none' }} />
 

@@ -575,42 +575,101 @@ async def analyze_presentation_video(
             for slide in slides
         ])
 
+        # 6. 计算一些客观指标用于辅助评分
+        transcript_word_count = len(transcript)
+        ppt_total_words = sum(len(slide.text_content) for slide in slides)
+        slide_count = len(slides)
+
+        # 估算每页平均讲解字数
+        avg_words_per_slide = transcript_word_count / slide_count if slide_count > 0 else 0
+
+        # 计算覆盖率（简单估算）
+        ppt_keywords = set()
+        for slide in slides:
+            # 提取 PPT 中的关键词（简单的中文分词）
+            words = [w for w in slide.text_content.replace('\n', ' ').split() if len(w) > 1]
+            ppt_keywords.update(words)
+
+        # 检查用户讲解中覆盖了多少 PPT 关键词
+        covered_keywords = sum(1 for kw in ppt_keywords if kw in transcript)
+        coverage_rate = (covered_keywords / len(ppt_keywords) * 100) if ppt_keywords else 0
+
+        logger.info(f"分析指标: 讲解字数={transcript_word_count}, PPT字数={ppt_total_words}, "
+                   f"页数={slide_count}, 平均每页={avg_words_per_slide:.1f}字, "
+                   f"关键词覆盖率={coverage_rate:.1f}%")
+
         # 6. 使用 AI 分析用户的演讲表现
-        analysis_prompt = f"""你是一位专业但严格的演讲教练。用户刚刚完成了一场 PPT 演讲练习，请客观分析他的表现。
+        analysis_prompt = f"""你是一位专业、严格且公正的演讲教练。用户刚刚完成了一场 PPT 演讲练习。
+
+【重要】你必须根据用户的实际表现给出客观、差异化的评分。绝对不要给出默认分数或固定分数。
 {personalized_context}
 
-**PPT 内容摘要：**
+===== PPT 内容（共 {slide_count} 页）=====
 {ppt_content_summary}
 
-**用户的讲解转写：**
+===== 用户讲解内容（共 {transcript_word_count} 字）=====
 {transcript}
 
-**评分标准（0-100分）：**
-- 90-100分：优秀 - 表达流畅自然，逻辑清晰，完整覆盖所有要点，有亮点
-- 70-89分：良好 - 表达清楚，逻辑尚可，覆盖大部分要点，有改进空间
-- 50-69分：及格 - 基本能讲清楚，但有明显问题（如逻辑混乱、遗漏要点、表达不清）
-- 30-49分：不及格 - 表达不清楚，逻辑混乱，遗漏大量内容
-- 0-29分：很差 - 几乎没有有效内容，或完全偏离主题
+===== 客观数据分析 =====
+- 讲解总字数：{transcript_word_count} 字
+- PPT 总页数：{slide_count} 页
+- 平均每页讲解：{avg_words_per_slide:.1f} 字
+- 关键词覆盖率：{coverage_rate:.1f}%
+- 参考标准：一般每页 PPT 建议讲解 100-200 字
 
-**请完成以下任务：**
+===== 严格评分标准 =====
+【90-100分 - 优秀】满足以下全部条件：
+- 讲解字数充足（每页 150+ 字）
+- 覆盖 PPT 所有核心要点（覆盖率 80%+）
+- 逻辑清晰，有开场、过渡、总结
+- 表达自然流畅，有个人见解或补充
+- 几乎没有语法或表达问题
 
-1. **总体评分**（0-100分）：严格按照上述标准评分，不要客气
-2. **优点**：列出 3-5 个用户做得好的地方（如果表现不好，可以少写）
-3. **需要改进**：列出 3-5 个需要改进的地方（要具体指出问题）
-4. **总体反馈**：给出 2-3 段详细的反馈，诚实但鼓励
-5. **具体建议**：给出 3-5 条可操作的改进建议
+【75-89分 - 良好】满足以下大部分条件：
+- 讲解字数适中（每页 80-150 字）
+- 覆盖大部分要点（覆盖率 60-80%）
+- 基本有逻辑结构
+- 表达较清楚，偶有小问题
 
-请以 JSON 格式返回，格式如下（注意：score 必须是数字，不要照抄示例的分数，要根据实际表现给分）：
+【60-74分 - 及格】存在以下部分问题：
+- 讲解字数较少（每页 50-80 字）
+- 遗漏部分重要内容（覆盖率 40-60%）
+- 逻辑结构不够清晰
+- 表达有时不够流畅
+
+【40-59分 - 需努力】存在以下多个问题：
+- 讲解过于简短（每页 < 50 字）
+- 遗漏较多内容（覆盖率 < 40%）
+- 缺乏逻辑结构
+- 表达不清楚或有较多问题
+
+【0-39分 - 不及格】存在以下严重问题：
+- 几乎没有有效讲解
+- 完全偏离主题
+- 无法听懂或理解
+
+===== 你的任务 =====
+1. 仔细阅读用户的讲解内容
+2. 对照 PPT 内容检查覆盖情况
+3. 结合客观数据和主观判断给出评分
+4. 给出具体、针对性的反馈
+
+【重要提醒】
+- 评分必须根据实际表现，不同表现要有明显分数差异
+- 如果用户讲得很简短，分数应该较低（60-70分）
+- 如果用户讲得详细且覆盖完整，分数应该较高（85-95分）
+- 不要总是给 80-85 分这种"安全"分数
+
+请返回以下 JSON 格式（score 必须是整数）：
 ```json
 {{
-  "score": <根据实际表现给出的分数>,
-  "strengths": ["具体的优点1", "具体的优点2", "..."],
-  "improvements": ["具体的问题1", "具体的问题2", "..."],
-  "overall_feedback": "详细的总体反馈...",
-  "suggestions": ["可操作的建议1", "可操作的建议2", "..."]
+  "score": <根据实际表现计算的分数，整数>,
+  "strengths": ["优点1（要具体）", "优点2", "..."],
+  "improvements": ["需改进1（要具体指出问题）", "需改进2", "..."],
+  "overall_feedback": "2-3段详细反馈，包含：1)对整体表现的评价 2)具体的好与不好 3)鼓励的话",
+  "suggestions": ["具体可操作的建议1", "建议2", "..."]
 }}
-```
-"""
+```"""
 
         # 使用 call_llm 方法（需要传入 Message 对象列表）
         analysis_result = await llm_client.call_llm([
@@ -623,23 +682,85 @@ async def analyze_presentation_video(
         import json
         import re
 
-        # 尝试提取 JSON
+        logger.info(f"AI 原始返回: {analysis_result[:500]}...")
+
+        # 尝试多种方式提取 JSON
+        analysis_data = None
+
+        # 方式1: 匹配 ```json ... ```
         json_match = re.search(r'```json\s*(\{.*?\})\s*```', analysis_result, re.DOTALL)
         if json_match:
-            analysis_data = json.loads(json_match.group(1))
-        else:
-            # 如果没有找到 JSON 格式，尝试直接解析
+            try:
+                analysis_data = json.loads(json_match.group(1))
+                logger.info(f"方式1解析成功: score={analysis_data.get('score')}")
+            except json.JSONDecodeError as e:
+                logger.warning(f"方式1 JSON解析失败: {e}")
+
+        # 方式2: 匹配 ``` ... ``` (不带json标记)
+        if not analysis_data:
+            json_match = re.search(r'```\s*(\{.*?\})\s*```', analysis_result, re.DOTALL)
+            if json_match:
+                try:
+                    analysis_data = json.loads(json_match.group(1))
+                    logger.info(f"方式2解析成功: score={analysis_data.get('score')}")
+                except json.JSONDecodeError as e:
+                    logger.warning(f"方式2 JSON解析失败: {e}")
+
+        # 方式3: 直接查找 { ... }
+        if not analysis_data:
+            json_match = re.search(r'\{[^{}]*"score"[^{}]*\}', analysis_result, re.DOTALL)
+            if json_match:
+                try:
+                    analysis_data = json.loads(json_match.group(0))
+                    logger.info(f"方式3解析成功: score={analysis_data.get('score')}")
+                except json.JSONDecodeError as e:
+                    logger.warning(f"方式3 JSON解析失败: {e}")
+
+        # 方式4: 尝试直接解析整个返回
+        if not analysis_data:
             try:
                 analysis_data = json.loads(analysis_result)
+                logger.info(f"方式4解析成功: score={analysis_data.get('score')}")
+            except json.JSONDecodeError:
+                pass
+
+        # 如果所有方式都失败，根据客观数据计算一个基础分数
+        if not analysis_data:
+            # 根据客观数据计算基础分数
+            base_score = 50  # 基础分
+            if avg_words_per_slide >= 150:
+                base_score += 25
+            elif avg_words_per_slide >= 80:
+                base_score += 15
+            elif avg_words_per_slide >= 50:
+                base_score += 5
+
+            if coverage_rate >= 80:
+                base_score += 15
+            elif coverage_rate >= 60:
+                base_score += 10
+            elif coverage_rate >= 40:
+                base_score += 5
+
+            logger.warning(f"JSON解析失败，使用计算分数: {base_score}")
+            analysis_data = {
+                "score": min(base_score, 95),  # 最高95分
+                "strengths": ["完成了演讲练习"],
+                "improvements": ["建议增加讲解内容", "覆盖更多PPT要点"],
+                "overall_feedback": f"你完成了这次演讲练习。讲解内容共 {transcript_word_count} 字，平均每页 {avg_words_per_slide:.0f} 字。" + (analysis_result[:300] if analysis_result else ""),
+                "suggestions": ["增加每页的讲解内容", "尝试覆盖PPT中的所有要点", "加入个人见解和例子"]
+            }
+
+        # 验证分数范围
+        score = analysis_data.get("score", 70)
+        if not isinstance(score, (int, float)):
+            try:
+                score = int(score)
             except:
-                # 解析失败，使用默认值
-                analysis_data = {
-                    "score": 75,
-                    "strengths": ["表达流畅", "逻辑清晰", "内容完整"],
-                    "improvements": ["可以加入更多例子", "注意语速控制", "增加互动"],
-                    "overall_feedback": analysis_result[:500],
-                    "suggestions": ["放慢语速", "增加停顿", "使用更多手势"]
-                }
+                score = 70
+        score = max(0, min(100, score))  # 确保在 0-100 范围内
+        analysis_data["score"] = score
+        logger.info(f"最终评分: {score}")
 
         # 7. 生成 AI 示范讲解（如何更好地讲解这个 PPT）
         demo_prompt = f"""你是一位专业的演讲教练。请为这个 PPT 生成一段完整的示范讲解话术（2-3分钟）。

@@ -352,7 +352,7 @@ function FeaturesSection() {
   }, []);
 
   return (
-    <section id="features" className="h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-purple-50 py-20 relative overflow-hidden">
+    <section id="features" className="h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 py-20 relative overflow-hidden">
       {/* 背景装饰 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* 动态圆圈 */}
@@ -401,15 +401,15 @@ function FeaturesSection() {
                 {/* 背景装饰 */}
                 <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${
                   index === 0 ? 'from-blue-400/10 to-blue-600/10' :
-                  index === 1 ? 'from-purple-400/10 to-purple-600/10' :
-                  'from-pink-400/10 to-pink-600/10'
+                  index === 1 ? 'from-blue-400/10 to-purple-400/10' :
+                  'from-purple-400/10 to-purple-600/10'
                 } rounded-full blur-2xl transform translate-x-12 -translate-y-12 group-hover:scale-150 transition-transform duration-500`}></div>
 
                 {/* 图标 */}
                 <div className={`relative inline-flex items-center justify-center w-16 h-16 mb-6 rounded-2xl bg-gradient-to-br ${
                   index === 0 ? 'from-blue-500 to-blue-600' :
-                  index === 1 ? 'from-purple-500 to-purple-600' :
-                  'from-pink-500 to-pink-600'
+                  index === 1 ? 'from-blue-500 to-purple-500' :
+                  'from-purple-500 to-purple-600'
                 } shadow-lg transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300`}>
                   <span className="text-3xl">{feature.icon}</span>
                 </div>
@@ -425,8 +425,8 @@ function FeaturesSection() {
                 {/* 底部装饰条 */}
                 <div className={`absolute bottom-0 left-0 h-1 bg-gradient-to-r ${
                   index === 0 ? 'from-blue-500 to-blue-600' :
-                  index === 1 ? 'from-purple-500 to-purple-600' :
-                  'from-pink-500 to-pink-600'
+                  index === 1 ? 'from-blue-500 to-purple-500' :
+                  'from-purple-500 to-purple-600'
                 } transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500`}></div>
               </div>
             </div>
@@ -472,15 +472,15 @@ function HowItWorksSection() {
   }, []);
 
   return (
-    <section className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 relative overflow-hidden">
+    <section className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
       {/* 背景装饰 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* 动态圆圈 */}
-        <div className="absolute top-20 right-20 w-72 h-72 bg-indigo-400/10 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 left-20 w-96 h-96 bg-pink-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }}></div>
+        <div className="absolute top-20 right-20 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-20 left-20 w-96 h-96 bg-purple-400/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1.5s' }}></div>
         {/* 浮动装饰 */}
-        <div className="absolute top-1/3 left-1/4 w-20 h-20 border-2 border-purple-300/20 rounded-full animate-float"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-16 h-16 border-2 border-indigo-300/20 rounded-full animate-float" style={{ animationDelay: '0.7s' }}></div>
+        <div className="absolute top-1/3 left-1/4 w-20 h-20 border-2 border-blue-300/20 rounded-full animate-float"></div>
+        <div className="absolute bottom-1/3 right-1/4 w-16 h-16 border-2 border-purple-300/20 rounded-full animate-float" style={{ animationDelay: '0.7s' }}></div>
       </div>
 
       <div className="flex-1 flex items-center justify-center py-20 relative z-10">
@@ -488,7 +488,7 @@ function HowItWorksSection() {
           {/* 标题 */}
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
-              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 使用流程
               </span>
             </h2>
@@ -511,8 +511,8 @@ function HowItWorksSection() {
               >
                 {/* 连接线（桌面端显示）- 增强效果 */}
                 {index < STEPS.length - 1 && (
-                  <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-1 bg-gradient-to-r from-indigo-400/40 via-purple-400/40 to-pink-400/40 rounded-full">
-                    <div className="h-full w-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full group-hover:w-full transition-all duration-1000"></div>
+                  <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-1 bg-gradient-to-r from-blue-400/40 via-purple-400/40 to-purple-400/40 rounded-full">
+                    <div className="h-full w-0 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full group-hover:w-full transition-all duration-1000"></div>
                   </div>
                 )}
 
@@ -520,12 +520,12 @@ function HowItWorksSection() {
                   {/* 步骤编号 - 增强设计 */}
                   <div className="relative inline-block mb-6">
                     {/* 外圈光晕 */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 rounded-full blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-300 scale-110"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full blur-xl opacity-30 group-hover:opacity-50 transition-opacity duration-300 scale-110"></div>
                     {/* 主圆圈 */}
                     <div className={`relative inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br ${
-                      index === 0 ? 'from-indigo-600 to-indigo-700' :
-                      index === 1 ? 'from-purple-600 to-purple-700' :
-                      'from-pink-600 to-pink-700'
+                      index === 0 ? 'from-blue-600 to-blue-700' :
+                      index === 1 ? 'from-blue-600 to-purple-600' :
+                      'from-purple-600 to-purple-700'
                     } text-white text-3xl font-bold shadow-2xl transform group-hover:scale-110 group-hover:rotate-12 transition-all duration-300`}>
                       <span className="relative z-10">{item.step}</span>
                       {/* 内圈装饰 */}
@@ -536,9 +536,9 @@ function HowItWorksSection() {
                   {/* 内容卡片 */}
                   <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg group-hover:shadow-2xl transition-all duration-300 border border-gray-100">
                     <h3 className={`text-xl font-bold mb-3 group-hover:text-transparent group-hover:bg-gradient-to-r ${
-                      index === 0 ? 'group-hover:from-indigo-600 group-hover:to-purple-600' :
-                      index === 1 ? 'group-hover:from-purple-600 group-hover:to-pink-600' :
-                      'group-hover:from-pink-600 group-hover:to-red-600'
+                      index === 0 ? 'group-hover:from-blue-600 group-hover:to-blue-700' :
+                      index === 1 ? 'group-hover:from-blue-600 group-hover:to-purple-600' :
+                      'group-hover:from-purple-600 group-hover:to-purple-700'
                     } group-hover:bg-clip-text transition-all duration-300 text-gray-900`}>
                       {item.title}
                     </h3>
@@ -548,9 +548,9 @@ function HowItWorksSection() {
 
                     {/* 底部装饰条 */}
                     <div className={`mt-4 h-1 bg-gradient-to-r ${
-                      index === 0 ? 'from-indigo-500 to-indigo-600' :
-                      index === 1 ? 'from-purple-500 to-purple-600' :
-                      'from-pink-500 to-pink-600'
+                      index === 0 ? 'from-blue-500 to-blue-600' :
+                      index === 1 ? 'from-blue-500 to-purple-500' :
+                      'from-purple-500 to-purple-600'
                     } transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-500 rounded-full`}></div>
                   </div>
                 </div>
@@ -562,7 +562,7 @@ function HowItWorksSection() {
           <div className="text-center mt-16 mb-12">
             <Link
               href="/product"
-              className="group inline-flex items-center gap-2 px-10 py-5 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-semibold rounded-2xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 relative overflow-hidden"
+              className="group inline-flex items-center gap-2 px-10 py-5 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-2xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 relative overflow-hidden"
             >
               <span className="relative z-10">立即开始练习</span>
               <svg
@@ -579,7 +579,7 @@ function HowItWorksSection() {
                 />
               </svg>
               {/* 悬停背景效果 */}
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-700 to-purple-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             </Link>
           </div>
         </div>

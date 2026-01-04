@@ -1,6 +1,279 @@
 # SpeakMate - AI 口语教练
 
-一个帮助用户练习口语表达的 Web 应用,支持 PPT 演讲、面试模拟和自我介绍三种练习场景。
+一个基于 AI 的智能口语练习平台，支持 PPT 演讲、面试模拟和自我介绍三种练习场景，提供实时语音识别、AI 反馈和语音合成功能。
+
+---
+
+## 📋 目录
+- [运行环境](#运行环境)
+- [依赖库及安装](#依赖库及安装)
+- [快速开始摘要](#快速开始摘要)
+- [详细运行步骤](#详细运行步骤)
+- [项目特性](#项目特性)
+- [使用演示](#使用演示)
+- [常见问题](#常见问题)
+
+---
+
+## 🖥️ 运行环境
+
+### 必需环境
+| 组件 | 版本要求 | 下载地址 |
+|------|---------|---------|
+| **Python** | 3.9 或以上 | [python.org/downloads](https://www.python.org/downloads/) |
+| **Node.js** | 16.0 或以上 | [nodejs.org](https://nodejs.org/) |
+| **npm** | 8.0 或以上 | 随 Node.js 自动安装 |
+| **Ollama** | 最新版本 | [ollama.ai](https://ollama.ai/) |
+
+### 系统级依赖（按操作系统）
+
+**macOS:**
+```bash
+brew install ffmpeg poppler libreoffice
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+sudo apt-get update
+sudo apt-get install ffmpeg poppler-utils libreoffice
+```
+
+**Windows:**
+- FFmpeg: 从 [ffmpeg.org](https://ffmpeg.org/download.html) 下载并添加到 PATH
+- Poppler: 从 [GitHub](https://github.com/oschwartz10612/poppler-windows/releases/) 下载并添加到 PATH
+- LibreOffice: 从 [libreoffice.org](https://www.libreoffice.org/) 下载安装
+
+---
+
+## 📦 依赖库及安装
+
+### 1. 后端依赖（Python）
+
+**依赖清单** (`backend/requirements.txt`):
+```
+fastapi>=0.109.0          # Web 框架
+uvicorn[standard]>=0.27.0 # ASGI 服务器
+pydantic>=2.5.3           # 数据验证
+faster-whisper>=1.0.0     # 语音识别
+edge-tts>=6.1.9           # 语音合成
+python-pptx==0.6.23       # PPT 处理
+pdf2image==1.17.0         # PDF 转图片
+openai>=1.13.3            # OpenAI API
+passlib[bcrypt]>=1.7.4    # 密码加密
+python-jose[cryptography]>=3.3.0  # JWT 认证
+# ... 更多依赖详见 requirements.txt
+```
+
+**安装命令**:
+```bash
+cd backend
+pip install -r requirements.txt
+```
+
+### 2. 前端依赖（JavaScript）
+
+**依赖清单** (`frontend/package.json`):
+```json
+{
+  "dependencies": {
+    "next": "14.0.4",           // React 框架
+    "react": "18.2.0",          // UI 库
+    "react-dom": "18.2.0"       // React DOM
+  },
+  "devDependencies": {
+    "typescript": "5.3.3",      // TypeScript
+    "tailwindcss": "3.4.0",     // CSS 框架
+    "@types/react": "18.2.46"   // React 类型
+  }
+}
+```
+
+**安装命令**:
+```bash
+cd frontend
+npm install
+```
+
+---
+
+## ⚡ 快速开始摘要
+
+**对于熟悉开发环境的评委，可以快速执行以下命令：**
+
+```bash
+# 1. 安装 Ollama 并下载模型
+ollama pull qwen2.5:3b
+
+# 2. 启动后端（终端 1）
+cd backend
+python3 -m venv venv
+source venv/bin/activate  # Windows: venv\Scripts\activate
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+# 3. 启动前端（终端 2）
+cd frontend
+npm install
+npm run dev
+
+# 4. 访问 http://localhost:3000
+```
+
+**详细的分步说明请参见下方。**
+
+---
+
+## 🚀 详细运行步骤
+
+### 步骤 0: 安装 Ollama 并下载模型
+
+**这一步非常重要！请务必先完成！**
+
+1. **安装 Ollama**
+   - 访问 [ollama.ai](https://ollama.ai/)
+   - 下载对应系统的安装包
+   - 按提示完成安装
+
+2. **下载 AI 模型**
+   ```bash
+   ollama pull qwen2.5:3b
+   ```
+   *首次下载约需 5-10 分钟，模型大小约 2GB*
+
+3. **验证安装**
+   ```bash
+   ollama list
+   ```
+   *应该能看到 `qwen2.5:3b` 模型*
+
+### 步骤 1: 克隆或解压项目
+
+```bash
+# 如果从 Git 克隆
+git clone <your-repo-url>
+cd speakmate
+
+# 如果是压缩包，直接解压后进入目录
+cd speakmate
+```
+
+### 步骤 2: 配置后端
+
+1. **进入后端目录**
+   ```bash
+   cd backend
+   ```
+
+2. **创建 Python 虚拟环境**
+
+   **macOS/Linux:**
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   ```
+
+   **Windows (CMD):**
+   ```cmd
+   python -m venv venv
+   venv\Scripts\activate.bat
+   ```
+
+   **Windows (PowerShell):**
+   ```powershell
+   python -m venv venv
+   venv\Scripts\Activate.ps1
+   ```
+
+   ⚠️ **Windows 用户注意**: 如果遇到权限错误，以管理员身份运行:
+   ```powershell
+   Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+   ```
+
+3. **安装 Python 依赖**
+   ```bash
+   pip install -r requirements.txt
+   ```
+   *安装时间约 2-5 分钟*
+
+4. **配置环境变量**
+   ```bash
+   # macOS/Linux
+   cp .env.example .env
+
+   # Windows
+   copy .env.example .env
+   ```
+
+   > 💡 默认配置已可用，无需修改。配置文件使用 Ollama 本地模型，无需 API Key。
+
+5. **启动后端服务**
+   ```bash
+   uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+   ```
+
+   **看到以下提示说明启动成功:**
+   ```
+   INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+   INFO:     Started reloader process
+   INFO:     Started server process
+   INFO:     Waiting for application startup.
+   INFO:     Application startup complete.
+   ```
+
+6. **验证后端运行**
+   - 打开浏览器访问: http://localhost:8000/health
+   - 应该看到类似这样的 JSON 响应:
+   ```json
+   {
+     "status": "ok",
+     "app_name": "SpeakMate",
+     "version": "1.0.0"
+   }
+   ```
+
+### 步骤 3: 配置前端
+
+**⚠️ 请打开新的终端窗口，保持后端运行！**
+
+1. **进入前端目录**
+   ```bash
+   cd frontend
+   # 如果你还在 backend 目录，先返回上级
+   # cd ..
+   # cd frontend
+   ```
+
+2. **安装前端依赖**
+   ```bash
+   npm install
+   ```
+   *安装时间约 1-3 分钟*
+
+3. **启动前端开发服务器**
+   ```bash
+   npm run dev
+   ```
+
+   **看到以下提示说明启动成功:**
+   ```
+   ▲ Next.js 14.0.4
+   - Local:        http://localhost:3000
+   - Ready in 2.5s
+   ```
+
+### 步骤 4: 访问应用
+
+1. **打开浏览器**
+   - 访问: http://localhost:3000
+
+2. **选择练习模式**
+   - 点击页面上的模式选择按钮（PPT 演讲 / 面试模拟 / 自我介绍）
+
+3. **开始使用**
+   - 按照页面提示进行操作
+
+---
 
 ## 项目特性
 
@@ -147,32 +420,64 @@
    启动成功后:
    - 前端地址: http://localhost:3000
 
-### 三、使用应用
+### 步骤 4: 访问应用
 
-1. 打开浏览器访问 http://localhost:3000
-2. 选择一个练习模式(PPT 演讲/面试模拟/自我介绍)
+1. **打开浏览器**
+   - 访问: http://localhost:3000
 
-#### PPT 演讲模式
-- **上传 PPT**: 支持 PDF、PPT、PPTX 格式（最大 50MB）
-- **AI 示范讲解**: 上传后自动为每一页生成示范讲解话术
-- **听 AI 示范**: 点击播放按钮，听 AI 如何讲解每一页
-- **查看文字稿**: 展开查看完整的示范讲解文本
-- **开始演讲**: 学习完 AI 示范后，开始自己的演讲练习
-- **获取反馈**: 演讲完成后获取 AI 分析和改进建议
+2. **选择练习模式**
+   - 点击页面上的模式选择按钮（PPT 演讲 / 面试模拟 / 自我介绍）
 
-#### 面试模拟模式
-- **选择岗位**: 选择前端、后端、产品等职位
-- **5 秒倒计时**: 准备面试开始
-- **语音对话**: 与 AI 面试官进行真实语音面试
-- **录音回答**: 按住按钮或空格键录音回答问题
-- **多轮问答**: 完成 4 轮面试问题
-- **最终评价**: 面试结束后获取语音评价
+3. **开始使用**
+   - 按照页面提示进行操作
 
-#### 自我介绍模式
-- **AI 示范**: 先听 AI 的示范自我介绍
-- **摄像头练习**: 打开摄像头，对着镜头练习
-- **录音上传**: 点击录制按钮，说出自我介绍
-- **获取反馈**: AI 自动转写并给出改进建议
+---
+
+## 🎬 使用演示
+
+### 模式 1: PPT 演讲练习
+
+1. **上传 PPT 文件**
+   - 点击"选择文件"按钮
+   - 支持 PDF、PPT、PPTX 格式（最大 50MB）
+   - 系统自动将 PPT 转换为图片并提取文本
+
+2. **查看 AI 示范讲解**
+   - 上传后自动为每一页生成示范讲解话术
+   - 点击播放按钮，听 AI 如何讲解每一页
+   - 展开查看完整的示范讲解文本
+
+3. **开始演讲练习**
+   - 学习完 AI 示范后，开始自己的演讲练习
+   - 在聊天框输入演讲内容或录制演讲视频
+   - 获取 AI 分析和改进建议
+
+### 模式 2: 面试模拟
+
+1. **选择面试岗位**
+   - 选择前端、后端、产品、数据等职位
+
+2. **开始语音面试**
+   - 5 秒倒计时准备
+   - AI 面试官语音提问
+   - 按住"按住说话"按钮或空格键录音回答
+
+3. **完成面试**
+   - 完成 4 轮面试问题
+   - 获取最终评价（语音播放）
+
+### 模式 3: 自我介绍练习
+
+1. **听 AI 示范**
+   - 点击播放按钮，听 AI 的示范自我介绍
+
+2. **摄像头练习**
+   - 开启摄像头，对着镜头练习
+   - 点击录制按钮，说出自我介绍
+
+3. **获取反馈**
+   - AI 自动转写语音内容
+   - 给出改进建议和示范
 
 ## 项目结构
 
